@@ -1,7 +1,8 @@
 import sys
 import pandas as pd
 import numpy as np
-from modeller_setting import LOGGER_PATH, NOTIFIER_PATH, TEMP_PATH, DATA_HANDLE_PATH, VISUAL_PATH, ModellerSetting
+from modeller_setting import LOGGER_PATH, NOTIFIER_PATH, TEMP_PATH, IO_PATH, VISUAL_PATH, NOTIFIER_AGENT, \
+    ModellerSetting
 from modeller_utilities import set_logger, get_session
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_val_score, cross_validate, validation_curve, learning_curve
@@ -11,18 +12,17 @@ import keras.backend as K
 import keras.backend.tensorflow_backend as ktf
 import tensorflow as tf
 sys.path.append(NOTIFIER_PATH)
-sys.path.append(DATA_HANDLE_PATH)
+sys.path.append(IO_PATH)
 sys.path.append(VISUAL_PATH)
-from notifier import Notifier
+from notifiers import send_message
 from file_io import FileIO
 from visualization import Visualization
 
 
 class Modeller(ModellerSetting):
 
-    def __init__(self, project):
-        self.notifier = Notifier(project)
-        self.file_io = FileIO(project)
+    def __init__(self):
+        self.file_io = FileIO()
         self.visual = Visualization()
         self.logger = set_logger(LOGGER_PATH, self.LOGGER_FILE, self.LOGGER_LEVEL, __name__)
         ktf.set_session(get_session())
@@ -34,8 +34,9 @@ class Modeller(ModellerSetting):
         estimator = self.file_io.load_file(self.MODEL_PATH, file_name, 'joblib')
         return estimator
 
-    def notify_model_fitting_failure(self, message):
-        self.notifier.send_message('Error in fitting model. {}'.format(message))
+    @ staticmethod
+    def notify_model_fitting_failure(message):
+        send_message('Error in fitting model. {}'.format(message), NOTIFIER_AGENT)
 
     def try_save_notify_exit(self, func, estimator, x_data, y_data, *args, model_file_name=None, verb=False,
                              **kwargs):

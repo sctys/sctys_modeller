@@ -2,7 +2,7 @@ import os
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler
 from sklearn.metrics import mean_squared_error, r2_score, f1_score, log_loss, roc_auc_score
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, LogisticRegression
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, LogisticRegression, HuberRegressor
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from xgboost import XGBRegressor, XGBClassifier
 from lightgbm import LGBMRegressor, LGBMClassifier
@@ -23,6 +23,7 @@ NOTIFIER_PATH = os.environ['SCTYS_PROJECT'] + '/sctys_notify'
 TEMP_PATH = os.environ['SCTYS_PROJECT'] + '/tmp'
 IO_PATH = os.environ['SCTYS_PROJECT'] + '/sctys_io'
 VISUAL_PATH = os.environ['SCTYS_PROJECT'] + '/sctys_visualization'
+NOTIFIER_AGENT = 'slack'
 
 
 class ModellerSetting(object):
@@ -35,7 +36,7 @@ class ModellerSetting(object):
                       'rf_reg': RandomForestRegressor, 'rf_clf': RandomForestClassifier, 'xgb_reg': XGBRegressor,
                       'xgb_clf': XGBClassifier, 'lgbm_reg': LGBMRegressor, 'lgbm_clf': LGBMClassifier,
                       'cat_reg': CatBoostRegressor, 'cat_clf': CatBoostClassifier, 'nn_reg': neural_network,
-                      'nn_clf': neural_network, 'lstm_reg': lstm, 'cnn_reg': cnn1d}
+                      'nn_clf': neural_network, 'lstm_reg': lstm, 'cnn_reg': cnn1d, 'huber': HuberRegressor}
     SEARCHER_DICT = {'grid': GridSearchCV, 'random': RandomizedSearchCV, 'tpe': tpe.suggest, 'anneal': anneal.suggest}
     SCORER_DICT = {'mse': {'func': mean_squared_error, 'greater_better': False},
                    'r2': {'func': r2_score, 'greater_better': True}, 'f1': {'func': f1_score, 'greater_better': True},
@@ -44,7 +45,7 @@ class ModellerSetting(object):
                    'poisson': {'func': poisson_loss, 'greater_better': False},
                    'poisson_xgb': {'func': poisson_loss_xgb, 'greater_better': False}}
     CV_DICT = {'kfold': KFold, 'groupkfold': GroupKFold}
-    HYPEROPT_MAX_ITER = 10
+    HYPEROPT_MAX_ITER = 20
     HYPEROPT_SPACE = {
         'ridge': {
             'estimator__alpha': {
